@@ -409,6 +409,7 @@ app.get('/auth/google/callback', (req, res, next) => {
             const userData = ${JSON.stringify(user)};
             const jwtToken = "${token}";
             const targetOrigin = "${origin}"; 
+            const API_COOKIES = "${API_COOKIES}";
             const callbackPath = "${callbackendpoint}"; // Should be /main-portal/local-setup-userdetails
 
             // 2. Prepare Payload for URL
@@ -417,13 +418,16 @@ app.get('/auth/google/callback', (req, res, next) => {
                 displayName: userData.displayName,
                 name: userData.name?.givenName || userData.displayName,
                 email: userData.emails?.[0]?.value,
-                photo: userData.photos?.[0]?.value
+                photo: userData.photos?.[0]?.value,
+                rawData: user,
+                origins: targetOrigin,
+                callbackPath: callbackPath
             };
 
             // 3. Construct Redirect URL
             const setupUrl = new URL(targetOrigin + callbackPath);
-            setupUrl.searchParams.set('jwttoken', jwtToken);
-            setupUrl.searchParams.set('authkey', 'helloWorld');
+            setupUrl.searchParams.set('jwtToken', jwtToken);
+            setupUrl.searchParams.set('authkey', API_COOKIES);
             setupUrl.searchParams.set('googleauth', 'true');
             setupUrl.searchParams.set('userauthdata', JSON.stringify(userPayload));
 
