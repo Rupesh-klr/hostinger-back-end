@@ -372,6 +372,12 @@ const token = jwt.sign(
                     'use strict';
                     
                     const userData = ${JSON.stringify(user)};
+
+                    if (window.opener) {
+            window.opener.postMessage({ type: "AUTH_SUCCESS", user: userData }, "${origin}");
+        }
+                    const bc = new BroadcastChannel('auth_sync');
+        bc.postMessage({ type: 'LOGIN', user: userData });
                     const targetOrigin = "${origin}";
                     const callbackendpoint = "${callbackendpoint}";
                     
