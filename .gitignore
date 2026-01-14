@@ -31,3 +31,6 @@ Thumbs.db
 
 dist/
 
+.env_constant
+env_constant.js
+
