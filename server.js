@@ -214,30 +214,50 @@ app.get(GOOGLE_AUTH_URL, passport.authenticate('google', {
 }));
 
 // 2. Add an error-handling middleware for the callback route
-app.get(GOOGLE_REDIRECT_URL, 
-    (req, res, next) => {
-        passport.authenticate('google', (err, user, info) => {
-            if (err) {
-                console.error("Passport Auth Error:", err);
-                console.log("Passport Auth Error:", err);
-                console.warn("Passport Auth Error:", err);
-                return res.status(500).send(`Auth Failed: ${err.message}`);
-            }
-            if (!user) {
-                console.warn("user not found" );
-                console.log("user not found" );
-                return res.redirect('/'); // Redirect back home if user not found
-            }
-            req.logIn(user, (err) => {
-                console.warn("user  found" );
-                console.log("user found" );
-                if (err) { console.warn("user not found err" , err);
-                console.log("user not found err" , err); return next(err); }
-                return res.redirect('/'); 
-            });
-        })(req, res, next);
-    }
-);
+// app.get(GOOGLE_REDIRECT_URL, 
+//     (req, res, next) => {
+//         passport.authenticate('google', (err, user, info) => {
+//             if (err) {
+//                 console.error("Passport Auth Error:", err);
+//                 console.log("Passport Auth Error:", err);
+//                 console.warn("Passport Auth Error:", err);
+//                 return res.status(500).send(`Auth Failed: ${err.message}`);
+//             }
+//             if (!user) {
+//                 console.warn("user not found" );
+//                 console.log("user not found" );
+//                 return res.redirect('/'); // Redirect back home if user not found
+//             }
+//             req.logIn(user, (err) => {
+//                 console.warn("user  found" );
+//                 console.log("user found" );
+//                 if (err) { console.warn("user not found err" , err);
+//                 console.log("user not found err" , err); return next(err); }
+//                 return res.redirect('/'); 
+//             });
+//         })(req, res, next);
+//     }
+// );
+app.get(GOOGLE_REDIRECT_URL, passport.authenticate('google'), (req, res) => {
+    // 1. Set Cross-Domain Cookies (Important for Hostinger domains)
+    res.cookie('session_id', req.sessionID, {
+        domain: '.hostingersite.com', // Allows sharing across subdomains
+        httpOnly: true,
+        secure: true,
+        sameSite: 'none'
+    });
+
+    // 2. Send a script that talks back to the main frontend window
+    res.send(`
+        <script>
+            window.opener.postMessage({
+                type: "AUTH_SUCCESS",
+                user: ${JSON.stringify(req.user)}
+            }, "https://saddlebrown-weasel-463292.hostingersite.com");
+            window.close();
+        </script>
+    `);
+});
 
 app.get('/api/current_user', (req, res) => {
     if (!req.user) {
