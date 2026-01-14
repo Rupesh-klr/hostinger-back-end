@@ -7,13 +7,19 @@ const GoogleStrategy = require('passport-google-oauth20').Strategy;
 
 const constants = require('./env_constant'); // Import your fallback file
 
-const dotenv = require('dotenv');
-// 1. Load dotenv BEFORE accessing variables
-// Configure dotenv to look in the .build folder
-const dotENVConfig = dotenv.config({ 
-    path: path.resolve(__dirname, '.build', 'config','.env') 
-});
+// const dotenv = require('dotenv');
+// // 1. Load dotenv BEFORE accessing variables
+// // Configure dotenv to look in the .build folder
+// const dotENVConfig = dotenv.config({ 
+//     path: path.resolve(__dirname, '.build', 'config','.env') 
+// });
 
+// if (dotENVConfig.error) {
+//     console.log("[DEBUG] .env file not found or could not be read:", dotENVConfig.error.message);
+// } else {
+//     console.log("[DEBUG] .env file found. Parsed keys:", Object.keys(dotENVConfig.parsed));
+//     console.log("[DEBUG] .env file found. Parsed keys:", Object.keys(dotENVConfig));
+// }
 // Set constants with 3-level priority
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID 
     || constants.GOOGLE_CLIENT_ID 
@@ -163,12 +169,6 @@ app.use((req, res, next) => {
 // 4. Initialize Passport
 app.use(passport.initialize());
 app.use(passport.session());
-if (dotENVConfig.error) {
-    console.log("[DEBUG] .env file not found or could not be read:", dotENVConfig.error.message);
-} else {
-    console.log("[DEBUG] .env file found. Parsed keys:", Object.keys(dotENVConfig.parsed));
-    console.log("[DEBUG] .env file found. Parsed keys:", Object.keys(dotENVConfig));
-}
 console.log("Using Client ID:", GOOGLE_CLIENT_ID.substring(0, 10) + "..."); 
 console.log("Using Redirect URL:", GOOGLE_REDIRECT_URL);
 console.log("DEBUG: ID length:", GOOGLE_CLIENT_ID.trim().length);
