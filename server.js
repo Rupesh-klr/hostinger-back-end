@@ -353,8 +353,8 @@ app.get('/auth/google/callback', (req, res, next) => {
         API_COOKIES,
         { expiresIn: "24h" }
     );
-    console.log("User authenticated:", req.user);
-    console.log(`User authenticated: ${origin}---${callbackendpoint}`);
+    console.log("User authenticated:", JSON.stringify(req.user, null, 2));
+    console.log(`User authenticated: ${stateParams.origin}---${stateParams.callbackendpoint}`);
 
     passport.authenticate('google', (err, user) => {
         if (err || !user) return res.status(500).send("Token Exchange Failed");
