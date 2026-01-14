@@ -58,6 +58,7 @@ app.get('/api/health', (req, res) => {
     console.log(`Logging to ${req.path} Log file not found at ${logFilePath}`);
   res.json({ status: 'ok', NODE_ENV: process.env.NODE_ENV || 'development' });
 });
+
 /**
  * Efficiently reads the last N lines of a file without loading the whole file into memory.
  */
@@ -159,7 +160,8 @@ app.use((req, res, next) => {
 // 4. Initialize Passport
 app.use(passport.initialize());
 app.use(passport.session());
-
+console.log("Using Client ID:", GOOGLE_CLIENT_ID.substring(0, 10) + "..."); 
+console.log("Using Redirect URL:", GOOGLE_REDIRECT_URL);
 // 5. Configure Google Strategy
 passport.use(new GoogleStrategy({
     clientID: GOOGLE_CLIENT_ID,
@@ -179,11 +181,29 @@ app.get(GOOGLE_AUTH_URL, passport.authenticate('google', {
     scope: ['profile', 'email']
 }));
 
-app.get(GOOGLE_REDIRECT_URL, 
-    passport.authenticate('google', { failureRedirect: '/' }), 
-    (req, res) => {
-        // Logged in successfully
-        res.redirect('/api/current_user'); 
+// 2. Add an error-handling middleware for the callback route
+app.get('/auth/google/callback', 
+    (req, res, next) => {
+        passport.authenticate('google', (err, user, info) => {
+            if (err) {
+                console.error("Passport Auth Error:", err);
+                console.log("Passport Auth Error:", err);
+                console.warn("Passport Auth Error:", err);
+                return res.status(500).send(`Auth Failed: ${err.message}`);
+            }
+            if (!user) {
+                console.warn("user not found" );
+                console.log("user not found" );
+                return res.redirect('/'); // Redirect back home if user not found
+            }
+            req.logIn(user, (err) => {
+                console.warn("user  found" );
+                console.log("user found" );
+                if (err) { console.warn("user not found err" , err);
+                console.log("user not found err" , err); return next(err); }
+                return res.redirect('/'); 
+            });
+        })(req, res, next);
     }
 );
 
