@@ -436,6 +436,7 @@ const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 // An async function is required to use 'await'
 async function delayedExecution() {
+debugger;
     console.log("Start: Waiting for 10 seconds...");
     // Pause execution of the function here for 10000 milliseconds (10 seconds)
     await sleep(10000); 
