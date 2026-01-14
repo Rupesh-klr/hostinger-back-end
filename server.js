@@ -442,7 +442,9 @@ debugger;
     await sleep(10000); 
     console.log("Done: 10 seconds have passed.");
 }
-
+setTimeout(() => {
+    console.log("This message appears after 10 seconds");
+}, 10000)
 // Call the async function to start the process
 delayedExecution();
             // 4. Execution Flow
