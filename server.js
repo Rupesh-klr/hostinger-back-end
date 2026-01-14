@@ -162,6 +162,10 @@ app.use(passport.initialize());
 app.use(passport.session());
 console.log("Using Client ID:", GOOGLE_CLIENT_ID.substring(0, 10) + "..."); 
 console.log("Using Redirect URL:", GOOGLE_REDIRECT_URL);
+console.log("DEBUG: ID length:", GOOGLE_CLIENT_ID.trim().length);
+console.log("DEBUG: Secret length:", GOOGLE_CLIENT_SECRET.trim().length);
+console.log("DEBUG: ID length:", GOOGLE_CLIENT_ID);
+console.log("DEBUG: Secret length:", GOOGLE_CLIENT_SECRET);
 // 5. Configure Google Strategy
 passport.use(new GoogleStrategy({
     clientID: GOOGLE_CLIENT_ID,
@@ -182,7 +186,7 @@ app.get(GOOGLE_AUTH_URL, passport.authenticate('google', {
 }));
 
 // 2. Add an error-handling middleware for the callback route
-app.get('/auth/google/callback', 
+app.get(GOOGLE_REDIRECT_URL, 
     (req, res, next) => {
         passport.authenticate('google', (err, user, info) => {
             if (err) {
