@@ -339,21 +339,13 @@ app.get('/auth/google/callback', (req, res, next) => {
         req.logIn(user, (loginErr) => {
             console.log("User authenticated inside logIn:", user);
             if (loginErr) return next(loginErr);
-
-            // 2. The cookie is now handled by req.logIn and session middleware
-
             res.send(`
-                <script>
-                    if (window.opener) {
-                        window.opener.postMessage({
-                            type: "AUTH_SUCCESS",
-                            user: ${JSON.stringify(user)}
-                        }, "${origin}");
-                        window.close();
-                    } else {
-                        // Fallback if opener is lost
-                        window.location.href = "${origin}${callbackendpoint}";
-                    }
+                 <script>
+                    window.opener.postMessage({
+                        type: "AUTH_SUCCESS",
+                        user: ${JSON.stringify(user)}
+                    }, "${origin}");
+                    window.close();
                 </script>
             `);
         });
