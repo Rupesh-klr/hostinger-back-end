@@ -166,6 +166,12 @@ console.log("DEBUG: ID length:", GOOGLE_CLIENT_ID.trim().length);
 console.log("DEBUG: Secret length:", GOOGLE_CLIENT_SECRET.trim().length);
 console.log("DEBUG: ID length:", GOOGLE_CLIENT_ID);
 console.log("DEBUG: Secret length:", GOOGLE_CLIENT_SECRET);
+console.log("--- Environment Debug ---");
+console.log("From process.env:", process.env.GOOGLE_CLIENT_SECRET ? "YES" : "NO");
+console.log("From constants file:", constants.GOOGLE_CLIENT_SECRET ? "YES" : "NO");
+console.log("--- START ALL ENVIRONMENT VARIABLES ---");
+console.log(JSON.stringify(process.env, null, 2)); 
+console.log("--- END ALL ENVIRONMENT VARIABLES ---");
 // 5. Configure Google Strategy
 passport.use(new GoogleStrategy({
     clientID: GOOGLE_CLIENT_ID,
