@@ -336,6 +336,7 @@ app.get('/auth/google/callback', (req, res, next) => {
 
     const origin = req.query.state || 'https://saddlebrown-weasel-463292.hostingersite.com';
     const callbackendpoint = req.query.callbackendpoint || '/';
+    
 
     console.log("User authenticated:", req.user);
     console.log("User authenticated:", origin);
@@ -347,29 +348,138 @@ app.get('/auth/google/callback', (req, res, next) => {
             console.log("User authenticated inside logIn:", user);
             if (loginErr) return next(loginErr);
             res.send(`
-                <html>
+                
+    <html>
+        <head>
+            <title>Authentication Successful</title>
+        </head>
         <body>
+            <div id="status" style="display: none;">
+                Authentication successful! You can close this window.
+            </div>
+            
             <script>
-                const userData = ${JSON.stringify(user)};
-                const targetOrigin = "${origin}";
-
-                if (window.opener && !window.opener.closed) {
-                    // Send the message to the main window
-                    window.opener.postMessage({
-                        type: "AUTH_SUCCESS",
-                        user: userData
-                    }, targetOrigin);
+                (function() {
+                    'use strict';
                     
-                    // Close the popup after a tiny delay to ensure message is sent
-                    setTimeout(() => window.close(), 100);
-                } else {
-                    // Fallback: If the popup lost the opener, redirect the popup itself
-                    window.location.href = targetOrigin + "/main-portal";
-                }
+                    const userData = ${JSON.stringify(user)};
+                    const targetOrigin = "${origin}";
+                    const callbackendpoint = "${callbackendpoint}";
+                    
+                    // Enhanced storage function
+                    function storeUserData() {
+                        const storageData = {
+                            auth: {
+                                user: userData,
+                                timestamp: new Date().toISOString(),
+                                provider: 'google'
+                            },
+                            profile: {
+                                id: userData.id,
+                                name: userData.displayName,
+                                email: userData.emails?.[0]?.value,
+                                avatar: userData.photos?.[0]?.value,
+                                raw: userData._raw ? JSON.parse(userData._raw) : null
+                            }
+                        };
+                        
+                        try {
+                            // Store as a single object
+                            localStorage.setItem('auth_session', JSON.stringify(storageData));
+                            
+                            // Also store in sessionStorage for redundancy
+                            sessionStorage.setItem('current_auth', JSON.stringify(storageData));
+                            
+                            // Set expiry (24 hours)
+                            localStorage.setItem('auth_expiry', 
+                                (Date.now() + (24 * 60 * 60 * 1000)).toString()
+                            );
+                            
+                            console.log('✅ User data stored successfully');
+                            return true;
+                        } catch (e) {
+                            console.error('❌ Storage failed:', e);
+                            return false;
+                        }
+                    }
+                    
+                    // Send message to opener
+                    function sendToOpener() {
+                        if (!window.opener || window.opener.closed) {
+                            return false;
+                        }
+                        
+                        try {
+                            window.opener.postMessage({
+                                type: "AUTH_COMPLETE",
+                                payload: {
+                                    success: true,
+                                    user: userData,
+                                    storage: {
+                                        auth_session: JSON.stringify({
+                                            user: userData,
+                                            timestamp: new Date().toISOString()
+                                        })
+                                    },
+                                    redirect: callbackendpoint
+                                }
+                            }, targetOrigin);
+                            
+                            // Additional message for localStorage sync
+                            window.opener.postMessage({
+                                type: "SYNC_STORAGE",
+                                action: "SET",
+                                key: "auth_session",
+                                value: JSON.stringify({
+                                    user: userData,
+                                    timestamp: new Date().toISOString()
+                                })
+                            }, targetOrigin);
+                            
+                            return true;
+                        } catch (e) {
+                            console.error('Message failed:', e);
+                            return false;
+                        }
+                    }
+                    
+                    // Main execution flow
+                    function handleAuthSuccess() {
+                        console.log('🔄 Processing authentication...');
+                        
+                        // 1. Store data locally
+                        const stored = storeUserData();
+                        
+                        // 2. Try to send to opener
+                        const messageSent = sendToOpener();
+                        
+                        // 3. Show status to user
+                        document.getElementById('status').style.display = 'block';
+                        
+                        // 4. Close or redirect
+                        if (messageSent) {
+                            console.log('✅ Message sent, closing in 500ms...');
+                            setTimeout(() => {
+                                window.close();
+                            }, 500);
+                        } else {
+                            console.log('⚠️  No opener, redirecting...');
+                            setTimeout(() => {
+                                window.location.href = targetOrigin + callbackendpoint;
+                            }, 1000);
+                        }
+                    }
+                    
+                    // Run when page loads
+                    window.addEventListener('load', handleAuthSuccess);
+                    
+                    // Fallback in case load event doesn't fire
+                    setTimeout(handleAuthSuccess, 100);
+                    
+                })();
             </script>
         </body>
     </html>
-                
             `);
         });
     })(req, res, next);
