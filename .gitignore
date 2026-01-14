@@ -30,3 +30,6 @@ Thumbs.db
 *.swp
 
 dist/
+
+env_constant.js
+.env_constant
