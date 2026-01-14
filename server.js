@@ -9,7 +9,10 @@ const constants = require('./env_constant'); // Import your fallback file
 
 const dotenv = require('dotenv');
 // 1. Load dotenv BEFORE accessing variables
-const dotENVConfig = dotenv.config();dotenv.config();
+// Configure dotenv to look in the .build folder
+const dotENVConfig = dotenv.config({ 
+    path: path.resolve(__dirname, '.build', '.env') 
+});
 
 // Set constants with 3-level priority
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID 
