@@ -5,7 +5,7 @@ const passport = require('passport');
 const cookieSession = require('cookie-session');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 
-const constants = require('./env_constant'); // Import your fallback file
+const env_constants = require('./env_constant'); // Import your fallback file
 
 const dotenv = require('dotenv');
 // // 1. Load dotenv BEFORE accessing variables
@@ -18,23 +18,23 @@ const dotenv = require('dotenv');
 
 dotenv.config({ path: './.build/config/.env'});
 
-// Set constants with 3-level priority
+// Set env_constants with 3-level priority
 const KRISHNALEENATWOTWOTWO_PROJECTONE_GOKGOAL_GOOGLE_CLIENT_ID = process.env.KRISHNALEENATWOTWOTWO_PROJECTONE_GOKGOAL_GOOGLE_CLIENT_ID 
-    || constants.KRISHNALEENATWOTWOTWO_PROJECTONE_GOKGOAL_GOOGLE_CLIENT_ID 
+    || env_constants.KRISHNALEENATWOTWOTWO_PROJECTONE_GOKGOAL_GOOGLE_CLIENT_ID 
     || '775388863546-huooskea92qrm42qokb2tama5nqe0521.apps.googleusercontent.com';
 
 const KRISHNALEENATWOTWOTWO_PROJECTONE_GOOGLE_CLIENT_SECRET = process.env.KRISHNALEENATWOTWOTWO_PROJECTONE_GOOGLE_CLIENT_SECRET 
-    || constants.KRISHNALEENATWOTWOTWO_PROJECTONE_GOOGLE_CLIENT_SECRET 
+    || env_constants.KRISHNALEENATWOTWOTWO_PROJECTONE_GOOGLE_CLIENT_SECRET 
     || 'Your_google _client_secert_come_here'; // i can't expose here
 
 const API_COOKIES = process.env.API_COOKIES 
-    || constants.API_COOKIES 
+    || env_constants.API_COOKIES 
     || 'helloWorld';
 const GOOGLE_AUTH_URL = '/auth/google'; // Standard path
 const GOOGLE_REDIRECT_URL = '/auth/google/callback'; // Must match Google Console
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3001;
 
 // Logs and Server Setup
 console.log('BOOT ENV TEST:', process.env.HELLO || 'HELLO not set');
@@ -176,7 +176,7 @@ console.log("DEBUG: ID length:", KRISHNALEENATWOTWOTWO_PROJECTONE_GOKGOAL_GOOGLE
 console.log("DEBUG: Secret length:", KRISHNALEENATWOTWOTWO_PROJECTONE_GOOGLE_CLIENT_SECRET);
 console.log("--- Environment Debug ---");
 console.log("From process.env:", process.env.KRISHNALEENATWOTWOTWO_PROJECTONE_GOOGLE_CLIENT_SECRET ? "YES" : "NO");
-console.log("From constants file:", constants.KRISHNALEENATWOTWOTWO_PROJECTONE_GOOGLE_CLIENT_SECRET ? "YES" : "NO");
+console.log("From env_constants file:", env_constants.KRISHNALEENATWOTWOTWO_PROJECTONE_GOOGLE_CLIENT_SECRET ? "YES" : "NO");
 console.log("--- START ALL ENVIRONMENT VARIABLES ---");
 console.log(JSON.stringify(process.env, null, 2)); 
 console.log("--- END ALL ENVIRONMENT VARIABLES ---");
