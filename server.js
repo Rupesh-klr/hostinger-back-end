@@ -239,6 +239,7 @@ app.get(GOOGLE_AUTH_URL, passport.authenticate('google', {
 //     }
 // );
 app.get(GOOGLE_REDIRECT_URL, passport.authenticate('google'), (req, res) => {
+    const frontendURL = req.query.origin || 'https://saddlebrown-weasel-463292.hostingersite.com';
     // 1. Set Cross-Domain Cookies (Important for Hostinger domains)
     res.cookie('session_id', req.sessionID, {
         domain: '.hostingersite.com', // Allows sharing across subdomains
@@ -253,7 +254,7 @@ app.get(GOOGLE_REDIRECT_URL, passport.authenticate('google'), (req, res) => {
             window.opener.postMessage({
                 type: "AUTH_SUCCESS",
                 user: ${JSON.stringify(req.user)}
-            }, "https://saddlebrown-weasel-463292.hostingersite.com");
+            }, "${frontendURL}");
             window.close();
         </script>
     `);
