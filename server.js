@@ -16,25 +16,49 @@ const dotenv = require('dotenv');
 
 // import dotenv from 'dotenv';
 
-dotenv.config({ path: './.build/config/.env'});
+dotenv.config({ path: './.build/config/.env' });
 
 // Set env_constants with 3-level priority
-const KRISHNALEENATWOTWOTWO_PROJECTONE_GOKGOAL_GOOGLE_CLIENT_ID = process.env.KRISHNALEENATWOTWOTWO_PROJECTONE_GOKGOAL_GOOGLE_CLIENT_ID 
-    || env_constants.KRISHNALEENATWOTWOTWO_PROJECTONE_GOKGOAL_GOOGLE_CLIENT_ID 
+const KRISHNALEENATWOTWOTWO_PROJECTONE_GOKGOAL_GOOGLE_CLIENT_ID = process.env.KRISHNALEENATWOTWOTWO_PROJECTONE_GOKGOAL_GOOGLE_CLIENT_ID
+    || env_constants.KRISHNALEENATWOTWOTWO_PROJECTONE_GOKGOAL_GOOGLE_CLIENT_ID
     || '775388863546-huooskea92qrm42qokb2tama5nqe0521.apps.googleusercontent.com';
 
-const KRISHNALEENATWOTWOTWO_PROJECTONE_GOOGLE_CLIENT_SECRET = process.env.KRISHNALEENATWOTWOTWO_PROJECTONE_GOOGLE_CLIENT_SECRET 
-    || env_constants.KRISHNALEENATWOTWOTWO_PROJECTONE_GOOGLE_CLIENT_SECRET 
+const KRISHNALEENATWOTWOTWO_PROJECTONE_GOOGLE_CLIENT_SECRET = process.env.KRISHNALEENATWOTWOTWO_PROJECTONE_GOOGLE_CLIENT_SECRET
+    || env_constants.KRISHNALEENATWOTWOTWO_PROJECTONE_GOOGLE_CLIENT_SECRET
     || 'Your_google _client_secert_come_here'; // i can't expose here
 
-const API_COOKIES = process.env.API_COOKIES 
-    || env_constants.API_COOKIES 
+const API_COOKIES = process.env.API_COOKIES
+    || env_constants.API_COOKIES
     || 'helloWorld';
 const GOOGLE_AUTH_URL = '/auth/google'; // Standard path
 const GOOGLE_REDIRECT_URL = '/auth/google/callback'; // Must match Google Console
 
 const app = express();
 const PORT = process.env.PORT || 3001;
+const allowedOrigins = [
+    'http://localhost:3002', // Your local development
+    'https://localhost:3002', 
+    'http://localhost:3001', 
+    'http://localhost:3000', 
+    'https://localhost:3001', 
+    'https://localhost:3000', 
+    'http://saddlebrown-weasel-463292.hostingersite.com', // Your Hostinger frontend
+    'https://saddlebrown-weasel-463292.hostingersite.com' // Your Hostinger frontend
+];
+
+app.use(cors({
+    origin: function (origin, callback) {
+        // Allow requests with no origin (like mobile apps or curl)
+        if (!origin) return callback(null, true);
+        if (allowedOrigins.indexOf(origin) === -1) {
+            return callback(new Error('CORS policy violation'), false);
+        }
+        return callback(null, true);
+    },
+    credentials: true, // Required to send/receive cookies and session IDs
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
+}));
 
 // Logs and Server Setup
 console.log('BOOT ENV TEST:', process.env.HELLO || 'HELLO not set');
@@ -64,7 +88,7 @@ console.warn = (...args) => logStream.write(formatLog('WARN', args));
 
 app.get('/api/health', (req, res) => {
     console.log(`Logging to ${req.path} Log file not found at ${logFilePath}`);
-  res.json({ status: 'ok', NODE_ENV: process.env.NODE_ENV || 'development' });
+    res.json({ status: 'ok', NODE_ENV: process.env.NODE_ENV || 'development' });
 });
 
 /**
@@ -168,7 +192,7 @@ app.use((req, res, next) => {
 // 4. Initialize Passport
 app.use(passport.initialize());
 app.use(passport.session());
-console.log("Using Client ID:", KRISHNALEENATWOTWOTWO_PROJECTONE_GOKGOAL_GOOGLE_CLIENT_ID.substring(0, 10) + "..."); 
+console.log("Using Client ID:", KRISHNALEENATWOTWOTWO_PROJECTONE_GOKGOAL_GOOGLE_CLIENT_ID.substring(0, 10) + "...");
 console.log("Using Redirect URL:", GOOGLE_REDIRECT_URL);
 console.log("DEBUG: ID length:", KRISHNALEENATWOTWOTWO_PROJECTONE_GOKGOAL_GOOGLE_CLIENT_ID.trim().length);
 console.log("DEBUG: Secret length:", KRISHNALEENATWOTWOTWO_PROJECTONE_GOOGLE_CLIENT_SECRET.trim().length);
@@ -178,13 +202,13 @@ console.log("--- Environment Debug ---");
 console.log("From process.env:", process.env.KRISHNALEENATWOTWOTWO_PROJECTONE_GOOGLE_CLIENT_SECRET ? "YES" : "NO");
 console.log("From env_constants file:", env_constants.KRISHNALEENATWOTWOTWO_PROJECTONE_GOOGLE_CLIENT_SECRET ? "YES" : "NO");
 console.log("--- START ALL ENVIRONMENT VARIABLES ---");
-console.log(JSON.stringify(process.env, null, 2)); 
+console.log(JSON.stringify(process.env, null, 2));
 console.log("--- END ALL ENVIRONMENT VARIABLES ---");
 
 console.log('Secret from env:', KRISHNALEENATWOTWOTWO_PROJECTONE_GOOGLE_CLIENT_SECRET);
 console.log('From process.env:', process.env.KRISHNALEENATWOTWOTWO_PROJECTONE_GOOGLE_CLIENT_SECRET ? 'YES' : 'NO');
-console.log('From process.env:', process.env.KRISHNALEENATWOTWOTWO_PROJECTONE_GOOGLE_CLIENT_SECRET );
-console.log('From process.env:', process.env.KRISHNALEENATWOTWOTWO_PROJECTONE_GOKGOAL_GOOGLE_CLIENT_ID );
+console.log('From process.env:', process.env.KRISHNALEENATWOTWOTWO_PROJECTONE_GOOGLE_CLIENT_SECRET);
+console.log('From process.env:', process.env.KRISHNALEENATWOTWOTWO_PROJECTONE_GOKGOAL_GOOGLE_CLIENT_ID);
 
 console.log('BOOT ENV TEST:', process.env.HELLO || 'HELLO not set');
 
@@ -215,12 +239,12 @@ passport.deserializeUser((user, done) => done(null, user));
 app.get('/auth/google', (req, res, next) => {
     const origin = req.query.origin; // Get the frontend URL
     const callbackendpoint = req.query.callbackendpoint || '/';
-    
+
     passport.authenticate('google', {
         scope: ['profile', 'email'],
         state: origin, // Store the origin in the 'state' parameter
         callbackendpoint: callbackendpoint,
-        prompt: 'select_account' 
+        prompt: 'select_account'
     })(req, res, next);
 });
 
@@ -252,22 +276,22 @@ app.get('/auth/google', (req, res, next) => {
 app.get('/auth/google/callback', (req, res, next) => {
     // 1. Set headers immediately
     res.setHeader('Cross-Origin-Opener-Policy', 'same-origin-allow-popups');
-    
+
     const origin = req.query.state || 'https://saddlebrown-weasel-463292.hostingersite.com';
     const callbackendpoint = req.query.callbackendpoint || '/';
 
-console.log("User authenticated:", req.user);
-console.log("User authenticated:", origin);
-    
+    console.log("User authenticated:", req.user);
+    console.log("User authenticated:", origin);
+
     passport.authenticate('google', (err, user) => {
         if (err || !user) return res.status(500).send("Token Exchange Failed");
 
         req.logIn(user, (loginErr) => {
             console.log("User authenticated inside logIn:", user);
             if (loginErr) return next(loginErr);
-            
+
             // 2. The cookie is now handled by req.logIn and session middleware
-            
+
             res.send(`
                 <script>
                     if (window.opener) {
@@ -289,7 +313,7 @@ console.log("User authenticated:", origin);
 //     const origin = req.query.state || 'https://saddlebrown-weasel-463292.hostingersite.com';
 // console.log("Origin received in callback:", origin);    
 // console.log("User authenticated:", req.user);
-    
+
 //     passport.authenticate('google', (err, user) => {
 //         if (err) return res.status(500).send("Token Exchange Failed");
 //         res.setHeader('Cross-Origin-Opener-Policy', 'same-origin-allow-popups');
@@ -303,7 +327,7 @@ console.log("User authenticated:", origin);
 //     });
 //         req.logIn(user, (loginErr) => {
 //             if (loginErr) return next(loginErr);
-            
+
 //             // Send the success script back to the frontend origin
 //             res.send(`
 //                 <script>
@@ -328,13 +352,13 @@ console.log("User authenticated:", origin);
 // const origin = req.query.state || 'https://saddlebrown-weasel-463292.hostingersite.com';
 // console.log("Origin received in callback:", origin);    
 // console.log("User authenticated:", req.user);
-    
+
 //     passport.authenticate('google', (err, user) => {
 //         if (err) return res.status(500).send("Token Exchange Failed");
-        
+
 //         req.logIn(user, (loginErr) => {
 //             if (loginErr) return next(loginErr);
-            
+
 //             // Send the success script back to the frontend origin
 //             res.send(`
 //                 <script>
