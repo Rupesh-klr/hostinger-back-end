@@ -130,6 +130,13 @@ app.use((req, res, next) => {
     }
     next();
 });
+app.use((req, res, next) => {
+    // Allows the popup to stay connected to your frontend
+    res.setHeader('Cross-Origin-Opener-Policy', 'same-origin-allow-popups');
+    // Allows cross-site data sharing
+    res.setHeader('Cross-Origin-Embedder-Policy', 'require-corp');
+    next();
+});
 
 // 4. Initialize Passport
 app.use(passport.initialize());
