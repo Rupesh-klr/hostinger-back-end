@@ -298,13 +298,14 @@ passport.deserializeUser((user, done) => done(null, user));
 //     scope: ['profile', 'email']
 // }));
 app.get('/auth/google', (req, res, next) => {
-    const origin = req.query.origin; // Get the frontend URL
-    const callbackendpoint = req.query.callbackendpoint || '/';
+    const origin = req.query.origin || 'http://localhost:3002';
+    const callbackendpoint = req.query.callbackendpoint || '/main-portal/local-setup-userdetails';
+
+    const state = JSON.stringify({ origin, callbackendpoint });
 
     passport.authenticate('google', {
         scope: ['profile', 'email'],
-        state: origin, // Store the origin in the 'state' parameter
-        mockbackendpoint: callbackendpoint,
+        state: Buffer.from(state).toString('base64'), // Base64 encode for URL safety
         prompt: 'select_account'
     })(req, res, next);
 });
@@ -336,8 +337,13 @@ app.get('/auth/google', (req, res, next) => {
 // );
 app.get('/auth/google/callback', (req, res, next) => {
 
-    const origin = req.query.state || 'https://saddlebrown-weasel-463292.hostingersite.com';
-    const callbackendpoint = req.query.mockbackendpoint || '/';
+    let stateParams = { origin: 'http://localhost:3002', callbackendpoint: '/' };
+    try {
+        const decodedState = JSON.parse(Buffer.from(req.query.state, 'base64').toString());
+        stateParams = decodedState;
+    } catch (e) {
+        console.error("State decode failed:", e);
+    }
 
     const token = jwt.sign(
         {
@@ -354,8 +360,28 @@ app.get('/auth/google/callback', (req, res, next) => {
         if (err || !user) return res.status(500).send("Token Exchange Failed");
 
         req.logIn(user, (loginErr) => {
-            console.log("User authenticated inside logIn:", user);
             if (loginErr) return next(loginErr);
+
+            // const token = "YOUR_JWT_TOKEN"; // Generate your JWT here
+            const { origin, callbackendpoint } = stateParams;
+
+            const userPayload = JSON.stringify({
+                id: user.id,
+                displayName: user.displayName,
+                name: user.name?.givenName || user.displayName,
+                email: user.emails?.[0]?.value,
+                photo: user.photos?.[0]?.value,
+                rawData: user
+            });
+
+            const targetOrigin = "${origin}${callbackendpoint}";
+
+            // 2. Construct the Redirect URL for your new component
+            const setupUrl = new URL(origin + callbackendpoint);
+            setupUrl.searchParams.set('jwttoken', token);
+            setupUrl.searchParams.set('authkey', API_COOKIES);
+            setupUrl.searchParams.set('googleauth', true);
+            setupUrl.searchParams.set('userauthdata', JSON.stringify(userPayload));
             res.send(`
           
                 
@@ -382,40 +408,18 @@ app.get('/auth/google/callback', (req, res, next) => {
                     'use strict';
                     
                     // 1. Prepare data
-                    const jwtToken = "${token}";
-                    const authKey = "${API_COOKIES}";
-                    const isGoogleAuth = "true";
-                    
-                    // Format user data to avoid rendering objects in React
-                    const userPayload = ${JSON.stringify({
-                id: user.id,
-                displayName: user.displayName,
-                name: user.name?.givenName || user.displayName,
-                email: user.emails?.[0]?.value,
-                photo: user.photos?.[0]?.value
-            })};
-
-                    const targetOrigin = "${origin}${callbackendpoint}"; 
-
-                    // 2. Construct the Redirect URL for your new component
-                    const setupUrl = new URL(targetOrigin);
-                    setupUrl.searchParams.set('jwttoken', jwtToken);
-                    setupUrl.searchParams.set('authkey', authKey);
-                    setupUrl.searchParams.set('googleauth', isGoogleAuth);
-                    setupUrl.searchParams.set('userauthdata', JSON.stringify(userPayload));
-                    setupUrl.searchParams.set('raw_user_data', JSON.stringify(${user}));
-
+                    // ${setupUrl.toString()}
                     // 3. Execution Flow
                     if (window.opener && !window.opener.closed) {
                         // Notify the main window lively
-                        window.opener.postMessage({ type: "AUTH_SUCCESS", user: userPayload }, targetOrigin);
+                        window.opener.postMessage({ type: "AUTH_SUCCESS", user: ${userPayload} }, ${targetOrigin});
                         
                         // Close popup and redirect main window to the setup route
-                        window.opener.location.href = setupUrl.toString();
+                        window.opener.location.href =  ${setupUrl.toString()};
                         window.close();
                     } else {
                         // Fallback: If popup lost connection, redirect the popup itself
-                        window.location.href = setupUrl.toString();
+                        window.location.href =  ${setupUrl.toString()};
                     }
                 })();
             </script>
