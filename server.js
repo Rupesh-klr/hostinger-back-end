@@ -14,12 +14,6 @@ const dotENVConfig = dotenv.config({
     path: path.join(process.cwd(), '.build', 'config','.env') 
 });
 
-if (dotENVConfig.error) {
-    console.log("[DEBUG] .env file not found or could not be read:", dotENVConfig.error.message);
-} else {
-    console.log("[DEBUG] .env file found. Parsed keys:", Object.keys(dotENVConfig.parsed));
-    console.log("[DEBUG] .env file found. Parsed keys:", Object.keys(dotENVConfig));
-}
 // Set constants with 3-level priority
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID 
     || constants.GOOGLE_CLIENT_ID 
@@ -187,6 +181,14 @@ console.log('Secret from env:', GOOGLE_CLIENT_SECRET);
 console.log('From process.env:', process.env.GOOGLE_CLIENT_SECRET ? 'YES' : 'NO');
 console.log('From process.env:', process.env.GOOGLE_CLIENT_SECRET );
 console.log('From process.env:', process.env.GOOGLE_CLIENT_ID );
+
+
+if (dotENVConfig.error) {
+    console.log("[DEBUG] .env file not found or could not be read:", dotENVConfig.error.message);
+} else {
+    console.log("[DEBUG] .env file found. Parsed keys:", Object.keys(dotENVConfig.parsed));
+    console.log("[DEBUG] .env file found. Parsed keys:", Object.keys(dotENVConfig));
+}
 // 5. Configure Google Strategy
 passport.use(new GoogleStrategy({
     clientID: GOOGLE_CLIENT_ID,
