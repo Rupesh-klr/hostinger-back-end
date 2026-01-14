@@ -15,12 +15,12 @@ const dotENVConfig = dotenv.config({
 });
 
 // Set constants with 3-level priority
-const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID 
-    || constants.GOOGLE_CLIENT_ID 
+const krishnaleena222_project1_gokgoal_GOOGLE_CLIENT_ID = process.env.krishnaleena222_project1_gokgoal_GOOGLE_CLIENT_ID 
+    || constants.krishnaleena222_project1_gokgoal_GOOGLE_CLIENT_ID 
     || '775388863546-huooskea92qrm42qokb2tama5nqe0521.apps.googleusercontent.com';
 
-const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET 
-    || constants.GOOGLE_CLIENT_SECRET 
+const krishnaleena222_project1_gokgoal_GOOGLE_CLIENT_SECRET = process.env.krishnaleena222_project1_gokgoal_GOOGLE_CLIENT_SECRET 
+    || constants.krishnaleena222_project1_gokgoal_GOOGLE_CLIENT_SECRET 
     || 'Your_google _client_secert_come_here'; // i can't expose here
 
 const API_COOKIES = process.env.API_COOKIES 
@@ -164,23 +164,23 @@ app.use((req, res, next) => {
 // 4. Initialize Passport
 app.use(passport.initialize());
 app.use(passport.session());
-console.log("Using Client ID:", GOOGLE_CLIENT_ID.substring(0, 10) + "..."); 
+console.log("Using Client ID:", krishnaleena222_project1_gokgoal_GOOGLE_CLIENT_ID.substring(0, 10) + "..."); 
 console.log("Using Redirect URL:", GOOGLE_REDIRECT_URL);
-console.log("DEBUG: ID length:", GOOGLE_CLIENT_ID.trim().length);
-console.log("DEBUG: Secret length:", GOOGLE_CLIENT_SECRET.trim().length);
-console.log("DEBUG: ID length:", GOOGLE_CLIENT_ID);
-console.log("DEBUG: Secret length:", GOOGLE_CLIENT_SECRET);
+console.log("DEBUG: ID length:", krishnaleena222_project1_gokgoal_GOOGLE_CLIENT_ID.trim().length);
+console.log("DEBUG: Secret length:", krishnaleena222_project1_gokgoal_GOOGLE_CLIENT_SECRET.trim().length);
+console.log("DEBUG: ID length:", krishnaleena222_project1_gokgoal_GOOGLE_CLIENT_ID);
+console.log("DEBUG: Secret length:", krishnaleena222_project1_gokgoal_GOOGLE_CLIENT_SECRET);
 console.log("--- Environment Debug ---");
-console.log("From process.env:", process.env.GOOGLE_CLIENT_SECRET ? "YES" : "NO");
-console.log("From constants file:", constants.GOOGLE_CLIENT_SECRET ? "YES" : "NO");
+console.log("From process.env:", process.env.krishnaleena222_project1_gokgoal_GOOGLE_CLIENT_SECRET ? "YES" : "NO");
+console.log("From constants file:", constants.krishnaleena222_project1_gokgoal_GOOGLE_CLIENT_SECRET ? "YES" : "NO");
 console.log("--- START ALL ENVIRONMENT VARIABLES ---");
 console.log(JSON.stringify(process.env, null, 2)); 
 console.log("--- END ALL ENVIRONMENT VARIABLES ---");
 
-console.log('Secret from env:', GOOGLE_CLIENT_SECRET);
-console.log('From process.env:', process.env.GOOGLE_CLIENT_SECRET ? 'YES' : 'NO');
-console.log('From process.env:', process.env.GOOGLE_CLIENT_SECRET );
-console.log('From process.env:', process.env.GOOGLE_CLIENT_ID );
+console.log('Secret from env:', krishnaleena222_project1_gokgoal_GOOGLE_CLIENT_SECRET);
+console.log('From process.env:', process.env.krishnaleena222_project1_gokgoal_GOOGLE_CLIENT_SECRET ? 'YES' : 'NO');
+console.log('From process.env:', process.env.krishnaleena222_project1_gokgoal_GOOGLE_CLIENT_SECRET );
+console.log('From process.env:', process.env.krishnaleena222_project1_gokgoal_GOOGLE_CLIENT_ID );
 
 console.log('BOOT ENV TEST:', process.env.HELLO || 'HELLO not set');
 
@@ -193,8 +193,8 @@ if (dotENVConfig.error) {
 }
 // 5. Configure Google Strategy
 passport.use(new GoogleStrategy({
-    clientID: GOOGLE_CLIENT_ID,
-    clientSecret: GOOGLE_CLIENT_SECRET,
+    clientID: krishnaleena222_project1_gokgoal_GOOGLE_CLIENT_ID,
+    clientSecret: krishnaleena222_project1_gokgoal_GOOGLE_CLIENT_SECRET,
     callbackURL: GOOGLE_REDIRECT_URL,
     proxy: true // Required if you ever deploy to Hostinger/Heroku (HTTPS)
 }, (accessToken, refreshToken, profile, done) => {
