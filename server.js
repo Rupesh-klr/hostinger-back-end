@@ -333,8 +333,6 @@ app.get('/auth/google', (req, res, next) => {
 //     }
 // );
 app.get('/auth/google/callback', (req, res, next) => {
-    // 1. Set headers immediately
-    res.setHeader('Cross-Origin-Opener-Policy', 'same-origin-allow-popups');
 
     const origin = req.query.state || 'https://saddlebrown-weasel-463292.hostingersite.com';
     const callbackendpoint = req.query.callbackendpoint || '/';
