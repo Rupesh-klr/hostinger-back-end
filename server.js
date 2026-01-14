@@ -214,10 +214,12 @@ passport.deserializeUser((user, done) => done(null, user));
 // }));
 app.get('/auth/google', (req, res, next) => {
     const origin = req.query.origin; // Get the frontend URL
+    const callbackendpoint = req.query.callbackendpoint || '/';
     
     passport.authenticate('google', {
         scope: ['profile', 'email'],
         state: origin, // Store the origin in the 'state' parameter
+        callbackendpoint: callbackendpoint,
         prompt: 'select_account' 
     })(req, res, next);
 });
@@ -252,6 +254,7 @@ app.get('/auth/google/callback', (req, res, next) => {
     res.setHeader('Cross-Origin-Opener-Policy', 'same-origin-allow-popups');
     
     const origin = req.query.state || 'https://saddlebrown-weasel-463292.hostingersite.com';
+    const callbackendpoint = req.query.callbackendpoint || '/';
 
 console.log("User authenticated:", req.user);
 console.log("User authenticated:", origin);
@@ -260,6 +263,7 @@ console.log("User authenticated:", origin);
         if (err || !user) return res.status(500).send("Token Exchange Failed");
 
         req.logIn(user, (loginErr) => {
+            console.log("User authenticated inside logIn:", user);
             if (loginErr) return next(loginErr);
             
             // 2. The cookie is now handled by req.logIn and session middleware
@@ -274,7 +278,7 @@ console.log("User authenticated:", origin);
                         window.close();
                     } else {
                         // Fallback if opener is lost
-                        window.location.href = "${origin}/dashboard";
+                        window.location.href = "${origin}${callbackendpoint}";
                     }
                 </script>
             `);
