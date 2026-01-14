@@ -62,6 +62,75 @@ app.use(cors({
     allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
 }));
 
+// backend/server.js
+// app.use(session({
+//     secret: 'your_secret',
+//     resave: false,
+//     saveUninitialized: false,
+//     cookie: {
+//         // Shared domain for all Hostinger subdomains
+//         domain: '.hostingersite.com', 
+//         httpOnly: true,
+//         // Must be true for Hostinger HTTPS
+//         secure: true, 
+//         // Required for cross-site cookie sharing
+//         sameSite: 'none', 
+//         maxAge: 24 * 60 * 60 * 1000 
+//     }
+// }));
+
+// // 2. Configure Cookie Session
+// app.use(cookieSession({
+//     name: 'session', // Recommendation: name the cookie
+//     maxAge: 24 * 60 * 60 * 1000, // 24 hours
+//     keys: [API_COOKIES]
+// }));
+const sessionConfig = {
+    secret: 'your_secret',
+    resave: false,
+    saveUninitialized: false,
+    proxy: true, // Required for Hostinger HTTPS
+    cookie: {
+        httpOnly: true,
+        maxAge: 24 * 60 * 60 * 1000 
+    }
+};
+
+// 2. Dynamic Cookie Adjustment Middleware
+app.use((req, res, next) => {
+    const origin = req.headers.origin;
+    
+    if (origin && origin.includes('hostingersite.com')) {
+        // Production: Enable cross-subdomain sharing
+        sessionConfig.cookie.domain = '.hostingersite.com';
+        sessionConfig.cookie.secure = true;
+        sessionConfig.cookie.sameSite = 'none';
+    } else {
+        // Localhost: Remove domain restriction
+        delete sessionConfig.cookie.domain;
+        sessionConfig.cookie.secure = false; // Local is usually HTTP
+        sessionConfig.cookie.sameSite = 'lax';
+    }
+    next();
+});
+
+// 3. Apply Session Middleware
+app.use(session(sessionConfig));
+// 3. FIX: Manual shim for Passport 0.6 compatibility with cookie-session
+// This fixes: "TypeError: req.session.regenerate is not a function"
+app.use((req, res, next) => {
+    if (req.session && !req.session.regenerate) {
+        req.session.regenerate = (cb) => cb();
+    }
+    if (req.session && !req.session.save) {
+        req.session.save = (cb) => cb();
+    }
+    next();
+});
+
+// 4. Initialize Passport
+app.use(passport.initialize());
+app.use(passport.session());
 // Logs and Server Setup
 console.log('BOOT ENV TEST:', process.env.HELLO || 'HELLO not set');
 
@@ -172,28 +241,6 @@ app.get('/lastlog', (req, res) => {
 });
 
 
-// 2. Configure Cookie Session
-app.use(cookieSession({
-    name: 'session', // Recommendation: name the cookie
-    maxAge: 24 * 60 * 60 * 1000, // 24 hours
-    keys: [API_COOKIES]
-}));
-
-// 3. FIX: Manual shim for Passport 0.6 compatibility with cookie-session
-// This fixes: "TypeError: req.session.regenerate is not a function"
-app.use((req, res, next) => {
-    if (req.session && !req.session.regenerate) {
-        req.session.regenerate = (cb) => cb();
-    }
-    if (req.session && !req.session.save) {
-        req.session.save = (cb) => cb();
-    }
-    next();
-});
-
-// 4. Initialize Passport
-app.use(passport.initialize());
-app.use(passport.session());
 console.log("Using Client ID:", KRISHNALEENATWOTWOTWO_PROJECTONE_GOKGOAL_GOOGLE_CLIENT_ID.substring(0, 10) + "...");
 console.log("Using Redirect URL:", GOOGLE_REDIRECT_URL);
 console.log("DEBUG: ID length:", KRISHNALEENATWOTWOTWO_PROJECTONE_GOKGOAL_GOOGLE_CLIENT_ID.trim().length);
