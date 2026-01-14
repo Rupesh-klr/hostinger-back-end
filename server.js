@@ -383,47 +383,71 @@ app.get('/auth/google/callback', (req, res, next) => {
             setupUrl.searchParams.set('googleauth', true);
             setupUrl.searchParams.set('userauthdata', JSON.stringify(userPayload));
             res.send(`
-          
-                
-                <!DOCTYPE html>
-    <html>
-        <head>
-            <title>Authentication Successful</title>
-            <style>
-                body { font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background: #f4f7f6; }
-                .loader { border: 4px solid #f3f3f3; border-top: 4px solid #3498db; border-radius: 50%; width: 30px; height: 30px; animation: spin 2s linear infinite; margin-bottom: 20px; }
-                @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-                .container { text-align: center; background: white; padding: 40px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-            </style>
-        </head>
-        <body>
-            <div class="container">
-                <div class="loader"></div>
-                <h2>Authentication Successful</h2>
-                <p>Finalizing your setup, please wait...</p>
-            </div>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Authentication Successful</title>
+    <style>
+        body { font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background: #f4f7f6; }
+        .loader { border: 4px solid #f3f3f3; border-top: 4px solid #3498db; border-radius: 50%; width: 30px; height: 30px; animation: spin 2s linear infinite; margin-bottom: 20px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .container { text-align: center; background: white; padding: 40px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="loader"></div>
+        <h2>Authentication Successful</h2>
+        <p>Finalizing your setup, please wait...</p>
+    </div>
 
-            <script>
-                (function() {
-                    'use strict';
-                    
-                    // 1. Prepare data
-                    // 3. Execution Flow
-                    if (window.opener && !window.opener.closed) {
-                        // Notify the main window lively
-                        window.opener.postMessage({ type: "AUTH_SUCCESS", user: ${userPayload} },${targetOrigin});
-                        
-                        // Close popup and redirect main window to the setup route
-                        window.opener.location.href =  "${setupUrl.toString()}";
-                        window.close();
-                    } else {
-                        // Fallback: If popup lost connection, redirect the popup itself
-                        window.location.href =  "${setupUrl.toString()}";
-                    }
-                })();
-            </script>
-        </body>
-    </html>
+    <script>
+        (function() {
+            'use strict';
+            
+            // 1. Data passed from Backend
+            const userData = ${JSON.stringify(user)};
+            const jwtToken = "${token}";
+            const targetOrigin = "${origin}"; 
+            const callbackPath = "${callbackendpoint}"; // Should be /main-portal/local-setup-userdetails
+
+            // 2. Prepare Payload for URL
+            const userPayload = {
+                id: userData.id,
+                displayName: userData.displayName,
+                name: userData.name?.givenName || userData.displayName,
+                email: userData.emails?.[0]?.value,
+                photo: userData.photos?.[0]?.value
+            };
+
+            // 3. Construct Redirect URL
+            const setupUrl = new URL(targetOrigin + callbackPath);
+            setupUrl.searchParams.set('jwttoken', jwtToken);
+            setupUrl.searchParams.set('authkey', 'helloWorld');
+            setupUrl.searchParams.set('googleauth', 'true');
+            setupUrl.searchParams.set('userauthdata', JSON.stringify(userPayload));
+
+            const finalUrl = setupUrl.toString();
+
+            // 4. Execution Flow
+            if (window.opener && !window.opener.closed) {
+                // Fix: Added proper targetOrigin string to postMessage
+                window.opener.postMessage({ 
+                    type: "AUTH_SUCCESS", 
+                    user: userPayload 
+                }, targetOrigin);
+                
+                // Redirect parent window and close popup
+                window.opener.location.href = finalUrl;
+                window.close();
+            } else {
+                // Fallback: Redirect the current window
+                window.location.href = finalUrl;
+            }
+        })();
+    </script>
+</body>
+</html>
             `);
         });
     })(req, res, next);
