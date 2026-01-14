@@ -93,6 +93,8 @@ const sessionConfig = {
     proxy: true, // Required for Hostinger HTTPS
     cookie: {
         httpOnly: true,
+        secure: true,   // Required for cross-site cookies
+        sameSite: 'none', // Allows cookie sharing between Hostinger and localhost
         maxAge: 24 * 60 * 60 * 1000 
     }
 };
@@ -340,17 +342,48 @@ app.get('/auth/google/callback', (req, res, next) => {
             console.log("User authenticated inside logIn:", user);
             if (loginErr) return next(loginErr);
             res.send(`
-                 <script>
+                <html>
+        <body>
+            <script>
+                const userData = ${JSON.stringify(user)};
+                const targetOrigin = "${origin}";
+
+                if (window.opener && !window.opener.closed) {
+                    // Send the message to the main window
                     window.opener.postMessage({
                         type: "AUTH_SUCCESS",
-                        user: ${JSON.stringify(user)}
-                    }, "${origin}");
-                    window.close();
-                </script>
+                        user: userData
+                    }, targetOrigin);
+                    
+                    // Close the popup after a tiny delay to ensure message is sent
+                    setTimeout(() => window.close(), 100);
+                } else {
+                    // Fallback: If the popup lost the opener, redirect the popup itself
+                    window.location.href = targetOrigin + "/main-portal";
+                }
+            </script>
+        </body>
+    </html>
+                
             `);
         });
     })(req, res, next);
 });
+/*
+
+                <script>
+                    if (window.opener) {
+                        window.opener.postMessage({
+                            type: "AUTH_SUCCESS",
+                            user: ${JSON.stringify(user)}
+                        }, "${origin}");
+                        window.close();
+                    } else {
+                        // Fallback if opener is lost
+                        window.location.href = "${origin}${callbackendpoint}";
+                    }
+                </script>
+*/
 // app.get('/auth/google/callback', (req, res, next) => {
 //     const origin = req.query.state || 'https://saddlebrown-weasel-463292.hostingersite.com';
 // console.log("Origin received in callback:", origin);    
