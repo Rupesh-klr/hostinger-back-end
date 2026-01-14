@@ -6,6 +6,15 @@ const passport = require('passport');
 const cookieSession = require('cookie-session');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const session = require('express-session');
+const jwt = require("jsonwebtoken");
+const token = jwt.sign(
+  {
+    id: user.id,
+    email: user.emails?.[0]?.value
+  },
+  "hello",
+  { expiresIn: "24h" }
+);
 // import cors from 'cors';
 
 const env_constants = require('./env_constant'); // Import your fallback file
@@ -442,6 +451,27 @@ app.get('/auth/google/callback', (req, res, next) => {
                             return false;
                         }
                     }
+                          const payload = {
+                type: "AUTH_SUCCESS",
+                token: "${token}",
+                user: ${JSON.stringify({
+                  id: user.id,
+                  name: user.displayName,
+                  email: user.emails?.[0]?.value,
+                  photo: user.photos?.[0]?.value
+                })}
+              };
+
+              const targetOrigin = "${origin}";
+
+              if (window.opener && !window.opener.closed) {
+
+                console.log("No opener found, redirecting...");
+                window.opener.postMessage(payload, targetOrigin);
+                setTimeout(() => window.close(), 10000);
+              } else {
+                console.log("No opener found, redirecting...");
+              }
                     
                     // Main execution flow
                     function handleAuthSuccess() {
