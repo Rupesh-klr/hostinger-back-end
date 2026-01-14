@@ -42,11 +42,11 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 const allowedOrigins = [
     'http://localhost:3002', // Your local development
-    'https://localhost:3002', 
-    'http://localhost:3001', 
-    'http://localhost:3000', 
-    'https://localhost:3001', 
-    'https://localhost:3000', 
+    'https://localhost:3002',
+    'http://localhost:3001',
+    'http://localhost:3000',
+    'https://localhost:3001',
+    'https://localhost:3000',
     'http://saddlebrown-weasel-463292.hostingersite.com', // Your Hostinger frontend
     'https://saddlebrown-weasel-463292.hostingersite.com' // Your Hostinger frontend
 ];
@@ -97,14 +97,14 @@ const sessionConfig = {
         httpOnly: true,
         secure: true,   // Required for cross-site cookies
         sameSite: 'none', // Allows cookie sharing between Hostinger and localhost
-        maxAge: 24 * 60 * 60 * 1000 
+        maxAge: 24 * 60 * 60 * 1000
     }
 };
 
 // 2. Dynamic Cookie Adjustment Middleware
 app.use((req, res, next) => {
     const origin = req.headers.origin;
-    
+
     if (origin && origin.includes('hostingersite.com')) {
         // Production: Enable cross-subdomain sharing
         sessionConfig.cookie.domain = '.hostingersite.com';
@@ -338,17 +338,17 @@ app.get('/auth/google/callback', (req, res, next) => {
 
     const origin = req.query.state || 'https://saddlebrown-weasel-463292.hostingersite.com';
     const callbackendpoint = req.query.callbackendpoint || '/';
-    
-const token = jwt.sign(
-  {
-    id: req?.user?.id,
-    email:req?.user?.emails?.[0]?.value
-  },
-  "hello",
-  { expiresIn: "24h" }
-);
+
+    const token = jwt.sign(
+        {
+            id: req?.user?.id,
+            email: req?.user?.emails?.[0]?.value
+        },
+        API_COOKIES,
+        { expiresIn: "24h" }
+    );
     console.log("User authenticated:", req.user);
-    console.log("User authenticated:", origin);
+    console.log(`User authenticated: ${origin}${callbackendpoint}`);
 
     passport.authenticate('google', (err, user) => {
         if (err || !user) return res.status(500).send("Token Exchange Failed");
@@ -383,26 +383,27 @@ const token = jwt.sign(
                     
                     // 1. Prepare data
                     const jwtToken = "${token}";
-                    const authKey = "key_" + Date.now();
+                    const authKey = "${API_COOKIES}";
                     const isGoogleAuth = "true";
                     
                     // Format user data to avoid rendering objects in React
                     const userPayload = ${JSON.stringify({
-                        id: user.id,
-                        displayName: user.displayName,
-                        name: user.name?.givenName || user.displayName,
-                        email: user.emails?.[0]?.value,
-                        photo: user.photos?.[0]?.value
-                    })};
+                id: user.id,
+                displayName: user.displayName,
+                name: user.name?.givenName || user.displayName,
+                email: user.emails?.[0]?.value,
+                photo: user.photos?.[0]?.value
+            })};
 
                     const targetOrigin = "${origin}${callbackendpoint}"; 
 
                     // 2. Construct the Redirect URL for your new component
-                    const setupUrl = new URL(targetOrigin + "/local-setup-userdetails");
+                    const setupUrl = new URL(targetOrigin);
                     setupUrl.searchParams.set('jwttoken', jwtToken);
                     setupUrl.searchParams.set('authkey', authKey);
                     setupUrl.searchParams.set('googleauth', isGoogleAuth);
                     setupUrl.searchParams.set('userauthdata', JSON.stringify(userPayload));
+                    setupUrl.searchParams.set('raw_user_data', JSON.stringify(user));
 
                     // 3. Execution Flow
                     if (window.opener && !window.opener.closed) {
