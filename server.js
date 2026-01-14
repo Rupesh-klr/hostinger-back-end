@@ -182,6 +182,8 @@ console.log('From process.env:', process.env.GOOGLE_CLIENT_SECRET ? 'YES' : 'NO'
 console.log('From process.env:', process.env.GOOGLE_CLIENT_SECRET );
 console.log('From process.env:', process.env.GOOGLE_CLIENT_ID );
 
+console.log('BOOT ENV TEST:', process.env.HELLO || 'HELLO not set');
+
 
 if (dotENVConfig.error) {
     console.log("[DEBUG] .env file not found or could not be read:", dotENVConfig.error.message);
