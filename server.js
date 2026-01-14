@@ -8,11 +8,15 @@ const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const constants = require('./env_constant'); // Import your fallback file
 
 const dotenv = require('dotenv');
-// 1. Load dotenv BEFORE accessing variables
-// Configure dotenv to look in the .build folder
-const dotENVConfig = dotenv.config({ 
-    path: path.join(process.cwd(), '.build', 'config','.env') 
-});
+// // 1. Load dotenv BEFORE accessing variables
+// // Configure dotenv to look in the .build folder
+// const dotenv = dotenv.config({ 
+//     path: path.join(process.cwd(), '.build', 'config','.env') 
+// });
+
+// import dotenv from 'dotenv';
+
+dotenv.config({ path: './.build/config/.env'});
 
 // Set constants with 3-level priority
 const KRISHNALEENATWOTWOTWO_PROJECTONE_GOKGOAL_GOOGLE_CLIENT_ID = process.env.KRISHNALEENATWOTWOTWO_PROJECTONE_GOKGOAL_GOOGLE_CLIENT_ID 
@@ -185,11 +189,10 @@ console.log('From process.env:', process.env.KRISHNALEENATWOTWOTWO_PROJECTONE_GO
 console.log('BOOT ENV TEST:', process.env.HELLO || 'HELLO not set');
 
 
-if (dotENVConfig.error) {
-    console.log("[DEBUG] .env file not found or could not be read:", dotENVConfig.error.message);
+if (dotenv.error) {
+    console.log("[DEBUG] .env file not found or could not be read:", dotenv.message);
 } else {
-    console.log("[DEBUG] .env file found. Parsed keys:", Object.keys(dotENVConfig.parsed));
-    console.log("[DEBUG] .env file found. Parsed keys:", Object.keys(dotENVConfig));
+    console.log("[DEBUG] .env file found. Parsed keys:", Object.keys(dotenv));
 }
 // 5. Configure Google Strategy
 passport.use(new GoogleStrategy({
