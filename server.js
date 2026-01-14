@@ -408,18 +408,17 @@ app.get('/auth/google/callback', (req, res, next) => {
                     'use strict';
                     
                     // 1. Prepare data
-                    // ${setupUrl.toString()}
                     // 3. Execution Flow
                     if (window.opener && !window.opener.closed) {
                         // Notify the main window lively
-                        window.opener.postMessage({ type: "AUTH_SUCCESS", user: ${userPayload} }, ${targetOrigin});
+                        window.opener.postMessage({ type: "AUTH_SUCCESS", user: ${userPayload} },${targetOrigin});
                         
                         // Close popup and redirect main window to the setup route
-                        window.opener.location.href =  ${setupUrl.toString()};
+                        window.opener.location.href =  "${setupUrl.toString()}";
                         window.close();
                     } else {
                         // Fallback: If popup lost connection, redirect the popup itself
-                        window.location.href =  ${setupUrl.toString()};
+                        window.location.href =  "${setupUrl.toString()}";
                     }
                 })();
             </script>
