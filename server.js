@@ -342,7 +342,7 @@ app.get('/auth/google/callback', (req, res, next) => {
 const token = jwt.sign(
   {
     id: req?.user?.id,
-    email:req?.user.emails?.[0]?.value
+    email:req?.user?.emails?.[0]?.value
   },
   "hello",
   { expiresIn: "24h" }
