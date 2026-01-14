@@ -7,14 +7,7 @@ const cookieSession = require('cookie-session');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const session = require('express-session');
 const jwt = require("jsonwebtoken");
-const token = jwt.sign(
-  {
-    id: user.id,
-    email: user.emails?.[0]?.value
-  },
-  "hello",
-  { expiresIn: "24h" }
-);
+
 // import cors from 'cors';
 
 const env_constants = require('./env_constant'); // Import your fallback file
@@ -346,7 +339,14 @@ app.get('/auth/google/callback', (req, res, next) => {
     const origin = req.query.state || 'https://saddlebrown-weasel-463292.hostingersite.com';
     const callbackendpoint = req.query.callbackendpoint || '/';
     
-
+const token = jwt.sign(
+  {
+    id: user.id,
+    email: user.emails?.[0]?.value
+  },
+  "hello",
+  { expiresIn: "24h" }
+);
     console.log("User authenticated:", req.user);
     console.log("User authenticated:", origin);
 
