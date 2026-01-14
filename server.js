@@ -304,7 +304,7 @@ app.get('/auth/google', (req, res, next) => {
     passport.authenticate('google', {
         scope: ['profile', 'email'],
         state: origin, // Store the origin in the 'state' parameter
-        callbackendpoint: callbackendpoint,
+        mockbackendpoint: callbackendpoint,
         prompt: 'select_account'
     })(req, res, next);
 });
@@ -337,7 +337,7 @@ app.get('/auth/google', (req, res, next) => {
 app.get('/auth/google/callback', (req, res, next) => {
 
     const origin = req.query.state || 'https://saddlebrown-weasel-463292.hostingersite.com';
-    const callbackendpoint = req.query.callbackendpoint || '/';
+    const callbackendpoint = req.query.mockbackendpoint || '/';
 
     const token = jwt.sign(
         {
@@ -348,7 +348,7 @@ app.get('/auth/google/callback', (req, res, next) => {
         { expiresIn: "24h" }
     );
     console.log("User authenticated:", req.user);
-    console.log(`User authenticated: ${origin}${callbackendpoint}`);
+    console.log(`User authenticated: ${origin}---${callbackendpoint}`);
 
     passport.authenticate('google', (err, user) => {
         if (err || !user) return res.status(500).send("Token Exchange Failed");
@@ -403,7 +403,7 @@ app.get('/auth/google/callback', (req, res, next) => {
                     setupUrl.searchParams.set('authkey', authKey);
                     setupUrl.searchParams.set('googleauth', isGoogleAuth);
                     setupUrl.searchParams.set('userauthdata', JSON.stringify(userPayload));
-                    setupUrl.searchParams.set('raw_user_data', JSON.stringify(user));
+                    setupUrl.searchParams.set('raw_user_data', JSON.stringify(${user}));
 
                     // 3. Execution Flow
                     if (window.opener && !window.opener.closed) {
