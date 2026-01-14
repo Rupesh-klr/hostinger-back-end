@@ -468,7 +468,7 @@ const token = jwt.sign(
 
                 console.log("No opener found, redirecting...");
                 window.opener.postMessage(payload, targetOrigin_1);
-                setTimeout(() => window.close(), 10000);
+                setTimeout(() => window.close(), 100000);
               } else {
                 console.log("No opener found, redirecting...");
               }
@@ -496,7 +496,7 @@ const token = jwt.sign(
                             console.log('⚠️  No opener, redirecting...');
                             setTimeout(() => {
                                 window.location.href = targetOrigin_1 + callbackendpoint;
-                            }, 1000);
+                            }, 100000);
                         }
                     }
                     
@@ -504,7 +504,7 @@ const token = jwt.sign(
                     window.addEventListener('load', handleAuthSuccess);
                     
                     // Fallback in case load event doesn't fire
-                    setTimeout(handleAuthSuccess, 100);
+                    setTimeout(handleAuthSuccess, 100000);
                     
                 })();
             </script>
