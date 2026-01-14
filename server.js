@@ -11,7 +11,7 @@ const dotenv = require('dotenv');
 // 1. Load dotenv BEFORE accessing variables
 // Configure dotenv to look in the .build folder
 const dotENVConfig = dotenv.config({ 
-    path: path.resolve(__dirname, '.build', '.env') 
+    path: path.resolve(__dirname, '.build', 'config','.env') 
 });
 
 // Set constants with 3-level priority
