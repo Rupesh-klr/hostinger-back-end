@@ -247,15 +247,10 @@ app.get('/auth/google', (req, res, next) => {
 //         })(req, res, next);
 //     }
 // );
-app.get(GOOGLE_REDIRECT_URL, passport.authenticate('google'), (req, res) => {
-    // 1. Set Cross-Domain Cookies (Important for Hostinger domains)
-    // res.cookie('session_id', req.sessionID, {
-    //     domain: '.hostingersite.com', // Allows sharing across subdomains
-    //     httpOnly: true,
-    //     secure: true,
-    //     sameSite: 'none'
-    // });
-const origin = req.query.state || 'https://saddlebrown-weasel-463292.hostingersite.com';
+app.get('/auth/google/callback', (req, res, next) => {
+    const origin = req.query.state || 'https://saddlebrown-weasel-463292.hostingersite.com';
+console.log("Origin received in callback:", origin);    
+console.log("User authenticated:", req.user);
     
     passport.authenticate('google', (err, user) => {
         if (err) return res.status(500).send("Token Exchange Failed");
@@ -276,6 +271,37 @@ const origin = req.query.state || 'https://saddlebrown-weasel-463292.hostingersi
         });
     })(req, res, next);
 });
+// app.get(GOOGLE_REDIRECT_URL, passport.authenticate('google'), (req, res) => {
+//     // 1. Set Cross-Domain Cookies (Important for Hostinger domains)
+//     // res.cookie('session_id', req.sessionID, {
+//     //     domain: '.hostingersite.com', // Allows sharing across subdomains
+//     //     httpOnly: true,
+//     //     secure: true,
+//     //     sameSite: 'none'
+//     // });
+// const origin = req.query.state || 'https://saddlebrown-weasel-463292.hostingersite.com';
+// console.log("Origin received in callback:", origin);    
+// console.log("User authenticated:", req.user);
+    
+//     passport.authenticate('google', (err, user) => {
+//         if (err) return res.status(500).send("Token Exchange Failed");
+        
+//         req.logIn(user, (loginErr) => {
+//             if (loginErr) return next(loginErr);
+            
+//             // Send the success script back to the frontend origin
+//             res.send(`
+//                 <script>
+//                     window.opener.postMessage({
+//                         type: "AUTH_SUCCESS",
+//                         user: ${JSON.stringify(user)}
+//                     }, "${origin}");
+//                     window.close();
+//                 </script>
+//             `);
+//         });
+//     })(req, res, next);
+// });
 
 app.get('/api/current_user', (req, res) => {
     if (!req.user) {
