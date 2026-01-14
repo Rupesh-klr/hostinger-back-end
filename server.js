@@ -419,7 +419,7 @@ app.get('/auth/google/callback', (req, res, next) => {
                 name: userData.name?.givenName || userData.displayName,
                 email: userData.emails?.[0]?.value,
                 photo: userData.photos?.[0]?.value,
-                rawData: user,
+                rawData: userData,
                 origins: targetOrigin,
                 callbackPath: callbackPath
             };
