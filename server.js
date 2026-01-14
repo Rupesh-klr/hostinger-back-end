@@ -432,7 +432,18 @@ app.get('/auth/google/callback', (req, res, next) => {
             setupUrl.searchParams.set('userauthdata', JSON.stringify(userPayload));
 
             const finalUrl = setupUrl.toString();
+const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
+// An async function is required to use 'await'
+async function delayedExecution() {
+    console.log("Start: Waiting for 10 seconds...");
+    // Pause execution of the function here for 10000 milliseconds (10 seconds)
+    await sleep(10000); 
+    console.log("Done: 10 seconds have passed.");
+}
+
+// Call the async function to start the process
+delayedExecution();
             // 4. Execution Flow
             if (window.opener && !window.opener.closed) {
                 // Fix: Added proper targetOrigin string to postMessage
