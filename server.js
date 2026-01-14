@@ -254,7 +254,15 @@ console.log("User authenticated:", req.user);
     
     passport.authenticate('google', (err, user) => {
         if (err) return res.status(500).send("Token Exchange Failed");
-        
+        res.setHeader('Cross-Origin-Opener-Policy', 'same-origin-allow-popups');
+    // Allows loading resources from different origins
+    res.setHeader('Cross-Origin-Embedder-Policy', 'require-corp');
+        res.cookie('session_id', req.sessionID, {
+        domain: '.hostingersite.com', // Allows sharing across subdomains
+        httpOnly: true,
+        secure: true,
+        sameSite: 'none'
+    });
         req.logIn(user, (loginErr) => {
             if (loginErr) return next(loginErr);
             
