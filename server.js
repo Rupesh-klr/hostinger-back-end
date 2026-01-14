@@ -357,161 +357,65 @@ const token = jwt.sign(
             console.log("User authenticated inside logIn:", user);
             if (loginErr) return next(loginErr);
             res.send(`
+          
                 
+                <!DOCTYPE html>
     <html>
         <head>
             <title>Authentication Successful</title>
+            <style>
+                body { font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background: #f4f7f6; }
+                .loader { border: 4px solid #f3f3f3; border-top: 4px solid #3498db; border-radius: 50%; width: 30px; height: 30px; animation: spin 2s linear infinite; margin-bottom: 20px; }
+                @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+                .container { text-align: center; background: white; padding: 40px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+            </style>
         </head>
         <body>
-            <div id="status" style="display: none;">
-                Authentication successful! You can close this window.
+            <div class="container">
+                <div class="loader"></div>
+                <h2>Authentication Successful</h2>
+                <p>Finalizing your setup, please wait...</p>
             </div>
-            
+
             <script>
                 (function() {
                     'use strict';
                     
-                    const userData = ${JSON.stringify(user)};
-
-                    if (window.opener) {
-            window.opener.postMessage({ type: "AUTH_SUCCESS", user: userData }, "${origin}");
-        }
-                    const bc = new BroadcastChannel('auth_sync');
-        bc.postMessage({ type: 'LOGIN', user: userData });
-                    const targetOrigin = "${origin}";
-                    const callbackendpoint = "${callbackendpoint}";
+                    // 1. Prepare data
+                    const jwtToken = "${token}";
+                    const authKey = "key_" + Date.now();
+                    const isGoogleAuth = "true";
                     
-                    // Enhanced storage function
-                    function storeUserData() {
-                        const storageData = {
-                            auth: {
-                                user: userData,
-                                timestamp: new Date().toISOString(),
-                                provider: 'google'
-                            },
-                            profile: {
-                                id: userData.id,
-                                name: userData.displayName,
-                                email: userData.emails?.[0]?.value,
-                                avatar: userData.photos?.[0]?.value,
-                                raw: userData._raw ? JSON.parse(userData._raw) : null
-                            }
-                        };
+                    // Format user data to avoid rendering objects in React
+                    const userPayload = ${JSON.stringify({
+                        id: user.id,
+                        displayName: user.displayName,
+                        name: user.name?.givenName || user.displayName,
+                        email: user.emails?.[0]?.value,
+                        photo: user.photos?.[0]?.value
+                    })};
+
+                    const targetOrigin = "${origin}${callbackendpoint}"; 
+
+                    // 2. Construct the Redirect URL for your new component
+                    const setupUrl = new URL(targetOrigin + "/local-setup-userdetails");
+                    setupUrl.searchParams.set('jwttoken', jwtToken);
+                    setupUrl.searchParams.set('authkey', authKey);
+                    setupUrl.searchParams.set('googleauth', isGoogleAuth);
+                    setupUrl.searchParams.set('userauthdata', JSON.stringify(userPayload));
+
+                    // 3. Execution Flow
+                    if (window.opener && !window.opener.closed) {
+                        // Notify the main window lively
+                        window.opener.postMessage({ type: "AUTH_SUCCESS", user: userPayload }, targetOrigin);
                         
-                        try {
-                            // Store as a single object
-                            localStorage.setItem('auth_session', JSON.stringify(storageData));
-                            
-                            // Also store in sessionStorage for redundancy
-                            sessionStorage.setItem('current_auth', JSON.stringify(storageData));
-                            
-                            // Set expiry (24 hours)
-                            localStorage.setItem('auth_expiry', 
-                                (Date.now() + (24 * 60 * 60 * 1000)).toString()
-                            );
-                            
-                            console.log('✅ User data stored successfully');
-                            return true;
-                        } catch (e) {
-                            console.error('❌ Storage failed:', e);
-                            return false;
-                        }
+                        // Close popup and redirect main window to the setup route
+                        window.opener.location.href = setupUrl.toString();
+                        window.close();
+                    } else {
+                        // Fallback: If popup lost connection, redirect the popup itself
+                        window.location.href = setupUrl.toString();
                     }
-                    
-                    // Send message to opener
-                    function sendToOpener() {
-                        if (!window.opener || window.opener.closed) {
-                            return false;
-                        }
-                        
-                        try {
-                            window.opener.postMessage({
-                                type: "AUTH_COMPLETE",
-                                payload: {
-                                    success: true,
-                                    user: userData,
-                                    storage: {
-                                        auth_session: JSON.stringify({
-                                            user: userData,
-                                            timestamp: new Date().toISOString()
-                                        })
-                                    },
-                                    redirect: callbackendpoint
-                                }
-                            }, targetOrigin);
-                            
-                            // Additional message for localStorage sync
-                            window.opener.postMessage({
-                                type: "SYNC_STORAGE",
-                                action: "SET",
-                                key: "auth_session",
-                                value: JSON.stringify({
-                                    user: userData,
-                                    timestamp: new Date().toISOString()
-                                })
-                            }, targetOrigin);
-                            
-                            return true;
-                        } catch (e) {
-                            console.error('Message failed:', e);
-                            return false;
-                        }
-                    }
-                          const payload = {
-                type: "AUTH_SUCCESS",
-                token: "${token}",
-                user: ${JSON.stringify({
-                  id: user.id,
-                  name: user.displayName,
-                  email: user.emails?.[0]?.value,
-                  photo: user.photos?.[0]?.value
-                })}
-              };
-
-              const targetOrigin_1 = "${origin}";
-
-              if (window.opener && !window.opener.closed) {
-
-                console.log("No opener found, redirecting...");
-                window.opener.postMessage(payload, targetOrigin_1);
-                setTimeout(() => window.close(), 100000);
-              } else {
-                console.log("No opener found, redirecting...");
-              }
-                    
-                    // Main execution flow
-                    function handleAuthSuccess() {
-                        console.log('🔄 Processing authentication...');
-                        
-                        // 1. Store data locally
-                        const stored = storeUserData();
-                        
-                        // 2. Try to send to opener
-                        const messageSent = sendToOpener();
-                        
-                        // 3. Show status to user
-                        document.getElementById('status').style.display = 'block';
-                        
-                        // 4. Close or redirect
-                        if (messageSent) {
-                            console.log('✅ Message sent, closing in 500ms...');
-                            setTimeout(() => {
-                                window.close();
-                            }, 500);
-                        } else {
-                            console.log('⚠️  No opener, redirecting...');
-                            setTimeout(() => {
-                                window.location.href = targetOrigin_1 + callbackendpoint;
-                            }, 100000);
-                        }
-                    }
-                    
-                    // Run when page loads
-                    window.addEventListener('load', handleAuthSuccess);
-                    
-                    // Fallback in case load event doesn't fire
-                    setTimeout(handleAuthSuccess, 100000);
-                    
                 })();
             </script>
         </body>
