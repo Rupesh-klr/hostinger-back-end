@@ -39,6 +39,7 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Logs and Server Setup
+console.log('BOOT ENV TEST:', process.env.HELLO || 'HELLO not set');
 
 const logDir = path.join(process.cwd(), 'logs');
 const logFileName = 'app.log';
