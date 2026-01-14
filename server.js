@@ -248,37 +248,71 @@ app.get('/auth/google', (req, res, next) => {
 //     }
 // );
 app.get('/auth/google/callback', (req, res, next) => {
+    // 1. Set headers immediately
+    res.setHeader('Cross-Origin-Opener-Policy', 'same-origin-allow-popups');
+    
     const origin = req.query.state || 'https://saddlebrown-weasel-463292.hostingersite.com';
-console.log("Origin received in callback:", origin);    
+
 console.log("User authenticated:", req.user);
+console.log("User authenticated:", origin);
     
     passport.authenticate('google', (err, user) => {
-        if (err) return res.status(500).send("Token Exchange Failed");
-        res.setHeader('Cross-Origin-Opener-Policy', 'same-origin-allow-popups');
-    // Allows loading resources from different origins
-    res.setHeader('Cross-Origin-Embedder-Policy', 'require-corp');
-        res.cookie('session_id', req.sessionID, {
-        domain: '.hostingersite.com', // Allows sharing across subdomains
-        httpOnly: true,
-        secure: true,
-        sameSite: 'none'
-    });
+        if (err || !user) return res.status(500).send("Token Exchange Failed");
+
         req.logIn(user, (loginErr) => {
             if (loginErr) return next(loginErr);
             
-            // Send the success script back to the frontend origin
+            // 2. The cookie is now handled by req.logIn and session middleware
+            
             res.send(`
                 <script>
-                    window.opener.postMessage({
-                        type: "AUTH_SUCCESS",
-                        user: ${JSON.stringify(user)}
-                    }, "${origin}");
-                    window.close();
+                    if (window.opener) {
+                        window.opener.postMessage({
+                            type: "AUTH_SUCCESS",
+                            user: ${JSON.stringify(user)}
+                        }, "${origin}");
+                        window.close();
+                    } else {
+                        // Fallback if opener is lost
+                        window.location.href = "${origin}/dashboard";
+                    }
                 </script>
             `);
         });
     })(req, res, next);
 });
+// app.get('/auth/google/callback', (req, res, next) => {
+//     const origin = req.query.state || 'https://saddlebrown-weasel-463292.hostingersite.com';
+// console.log("Origin received in callback:", origin);    
+// console.log("User authenticated:", req.user);
+    
+//     passport.authenticate('google', (err, user) => {
+//         if (err) return res.status(500).send("Token Exchange Failed");
+//         res.setHeader('Cross-Origin-Opener-Policy', 'same-origin-allow-popups');
+//     // Allows loading resources from different origins
+//     res.setHeader('Cross-Origin-Embedder-Policy', 'require-corp');
+//         res.cookie('session_id', req.sessionID, {
+//         domain: '.hostingersite.com', // Allows sharing across subdomains
+//         httpOnly: true,
+//         secure: true,
+//         sameSite: 'none'
+//     });
+//         req.logIn(user, (loginErr) => {
+//             if (loginErr) return next(loginErr);
+            
+//             // Send the success script back to the frontend origin
+//             res.send(`
+//                 <script>
+//                     window.opener.postMessage({
+//                         type: "AUTH_SUCCESS",
+//                         user: ${JSON.stringify(user)}
+//                     }, "${origin}");
+//                     window.close();
+//                 </script>
+//             `);
+//         });
+//     })(req, res, next);
+// });
 // app.get(GOOGLE_REDIRECT_URL, passport.authenticate('google'), (req, res) => {
 //     // 1. Set Cross-Domain Cookies (Important for Hostinger domains)
 //     // res.cookie('session_id', req.sessionID, {
